@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Private Transactions - Polygon OMS Docs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --pol-purple: #6700E5;
+  --pol-purple-dim: #4A00A3;
+  --pol-purple-glow: rgba(103,0,229,0.15);
+  --blue: #0037C6;
+  --sky-blue: #00BBFF;
+  --soft-purple: #C590E5;
+  --neon-green: #00FF08;
+  --orange: #FF7421;
+  --yellow: #FEE211;
+
+  --bg: #0E0E10;
+  --bg-surface: #141415;
+  --bg-card: #1A1A1C;
+  --bg-code: #111113;
+  --text-primary: #F2F3F7;
+  --text-secondary: #A0A1A6;
+  --text-tertiary: #595A5F;
+  --border: #222224;
+  --border-subtle: #1B1B1D;
+  --stroke-purple: rgba(103,0,229,0.4);
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text-primary);
+  font-size: 15px;
+  line-height: 1.7;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 256px;
+  min-width: 256px;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border);
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
+  padding: 0 0 40px;
+  flex-shrink: 0;
+}
+
+.sidebar-header {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pol-mark {
+  width: 28px;
+  height: 28px;
+  background: var(--pol-purple);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pol-mark svg { width: 16px; height: 16px; }
+
+.sidebar-brand {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.sidebar-brand span {
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.nav-section {
+  padding: 20px 12px 4px;
+}
+
+.nav-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-tertiary);
+  padding: 0 8px;
+  margin-bottom: 6px;
+}
+
+.nav-item {
+  display: block;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  line-height: 1.4;
+}
+
+.nav-item:hover { background: rgba(255,255,255,0.05); color: var(--text-primary); }
+
+.nav-item.active {
+  background: var(--pol-purple-glow);
+  color: #C590E5;
+}
+
+.nav-item.sub {
+  padding-left: 20px;
+  font-size: 12.5px;
+}
+
+/* ── Main ── */
+.main {
+  flex: 1;
+  min-width: 0;
+  max-width: 840px;
+  padding: 56px 64px 120px;
+}
+
+/* ── Topbar breadcrumb ── */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-bottom: 36px;
+}
+
+.breadcrumb a { color: var(--text-tertiary); text-decoration: none; }
+.breadcrumb a:hover { color: var(--text-secondary); }
+.breadcrumb span { color: var(--text-tertiary); }
+
+/* ── Page header ── */
+.page-header { margin-bottom: 48px; }
+
+.page-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--pol-purple);
+  margin-bottom: 12px;
+  filter: brightness(1.3);
+}
+
+.page-title {
+  font-size: 36px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+  line-height: 1.15;
+  margin-bottom: 16px;
+}
+
+.page-description {
+  font-size: 16px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  max-width: 580px;
+}
+
+/* ── Module badges ── */
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  border: 1px solid;
+}
+
+.badge-purple { color: #C590E5; border-color: rgba(197,144,229,0.35); background: rgba(197,144,229,0.07); }
+.badge-blue   { color: #00BBFF; border-color: rgba(0,187,255,0.3);    background: rgba(0,187,255,0.06); }
+.badge-green  { color: #00FF08; border-color: rgba(0,255,8,0.3);     background: rgba(0,255,8,0.06);  }
+
+/* ── Divider ── */
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 48px 0;
+}
+
+/* ── Section headings ── */
+.section-anchor { padding-top: 8px; }
+
+h2 {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+h2 .anchor-link {
+  font-size: 14px;
+  color: var(--text-tertiary);
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  font-weight: 400;
+}
+
+h2:hover .anchor-link { opacity: 1; }
+
+h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-top: 28px;
+  margin-bottom: 10px;
+  letter-spacing: -0.01em;
+}
+
+p { margin-bottom: 14px; color: var(--text-secondary); }
+p:last-child { margin-bottom: 0; }
+
+strong { color: var(--text-primary); font-weight: 600; }
+
+/* ── Callout ── */
+.callout {
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin: 20px 0;
+  display: flex;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.callout-info {
+  background: rgba(0,187,255,0.07);
+  border: 1px solid rgba(0,187,255,0.2);
+  color: #A8E9FF;
+}
+
+.callout-note {
+  background: rgba(103,0,229,0.08);
+  border: 1px solid rgba(103,0,229,0.25);
+  color: #C590E5;
+}
+
+.callout-warning {
+  background: rgba(255,116,33,0.07);
+  border: 1px solid rgba(255,116,33,0.25);
+  color: #FFBB88;
+}
+
+.callout-icon {
+  font-size: 15px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ── Code blocks ── */
+.code-block {
+  background: var(--bg-code);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 16px 0;
+  overflow: hidden;
+}
+
+.code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+}
+
+.code-lang {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.code-copy {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-tertiary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.code-copy:hover { background: rgba(255,255,255,0.06); color: var(--text-secondary); }
+
+pre {
+  padding: 16px 20px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.65;
+  color: #E2E4E9;
+}
+
+.kw { color: #C590E5; }
+.cm { color: #595A5F; }
+.str { color: #A8E9FF; }
+.num { color: #FF7421; }
+.fn { color: #6700E5; filter: brightness(1.8); }
+.var { color: #F2F3F7; }
+.op { color: #888A91; }
+
+code {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: #C590E5;
+}
+
+/* ── Math blocks ── */
+.math-block {
+  background: var(--bg-code);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 24px;
+  margin: 16px 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: #F2F3F7;
+  line-height: 1.8;
+  overflow-x: auto;
+}
+
+.math-comment {
+  color: var(--text-tertiary);
+  margin-left: 24px;
+  font-size: 12px;
+}
+
+/* ── Property tables ── */
+.prop-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  margin: 16px 0;
+}
+
+.prop-table th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 500;
+}
+
+.prop-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  vertical-align: top;
+}
+
+.prop-table td:first-child {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: #A8E9FF;
+  white-space: nowrap;
+}
+
+.prop-table tr:last-child td { border-bottom: none; }
+
+/* ── Comparison grid ── */
+.compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.compare-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 18px;
+}
+
+.compare-card h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.compare-card ul {
+  list-style: none;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+
+.compare-card li::before {
+  content: "-";
+  color: var(--text-tertiary);
+  margin-right: 8px;
+}
+
+/* ── Architecture diagram ── */
+.arch-diagram {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 24px;
+  margin: 20px 0;
+}
+
+.arch-row {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+  margin-bottom: 8px;
+}
+
+.arch-row:last-child { margin-bottom: 0; }
+
+.arch-box {
+  flex: 1;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.arch-box .ab-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 3px;
+}
+
+.arch-box .ab-title {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.arch-box .ab-sub {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  margin-top: 3px;
+}
+
+.arch-box-purple { background: rgba(103,0,229,0.12); border: 1px solid rgba(103,0,229,0.3); }
+.arch-box-purple .ab-label { color: #9B40FF; }
+
+.arch-box-blue { background: rgba(0,55,198,0.12); border: 1px solid rgba(0,55,198,0.35); }
+.arch-box-blue .ab-label { color: #4D80FF; }
+
+.arch-box-teal { background: rgba(0,187,255,0.08); border: 1px solid rgba(0,187,255,0.25); }
+.arch-box-teal .ab-label { color: #00BBFF; }
+
+.arch-box-gray { background: rgba(255,255,255,0.04); border: 1px solid var(--border); }
+.arch-box-gray .ab-label { color: var(--text-tertiary); }
+
+.arch-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  font-size: 14px;
+  padding: 2px 0;
+}
+
+/* ── Step list ── */
+.step-list { margin: 16px 0; }
+
+.step-item {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 14px;
+  align-items: flex-start;
+}
+
+.step-num {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  border-radius: 50%;
+  background: var(--pol-purple-glow);
+  border: 1px solid rgba(103,0,229,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #C590E5;
+  margin-top: 2px;
+}
+
+.step-content { flex: 1; }
+.step-content strong { display: block; margin-bottom: 2px; font-size: 14px; }
+.step-content p { font-size: 13.5px; color: var(--text-secondary); margin: 0; }
+
+/* ── Key list ── */
+.key-list {
+  list-style: none;
+  margin: 12px 0;
+}
+
+.key-list li {
+  display: flex;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 14px;
+  color: var(--text-secondary);
+  align-items: flex-start;
+}
+
+.key-list li:last-child { border-bottom: none; }
+
+.key-dot {
+  width: 6px;
+  height: 6px;
+  min-width: 6px;
+  border-radius: 50%;
+  margin-top: 8px;
+}
+
+.dot-purple { background: var(--pol-purple); filter: brightness(1.3); }
+.dot-blue   { background: var(--sky-blue); }
+.dot-green  { background: var(--neon-green); }
+.dot-gray   { background: var(--text-tertiary); }
+
+/* ── Gadget table ── */
+.gadget-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 16px 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.gadget-table th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.02);
+  font-weight: 500;
+}
+
+.gadget-table td {
+  padding: 9px 14px;
+  border-top: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  vertical-align: top;
+  line-height: 1.5;
+}
+
+.gadget-table td:first-child {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: #C590E5;
+  white-space: nowrap;
+  width: 240px;
+}
+
+/* ── Signal row ── */
+.signal-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 16px 0;
+}
+
+.signal-group {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.signal-group:last-child { border-bottom: none; }
+
+.signal-group-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  margin-bottom: 8px;
+}
+
+.signal-items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.signal-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.signal-name {
+  font-family: var(--font-mono);
+  color: #A8E9FF;
+  min-width: 240px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.signal-desc { color: var(--text-secondary); line-height: 1.6; }
+
+/* ── Constraint list ── */
+.constraint-list {
+  counter-reset: constraint;
+  list-style: none;
+  margin: 16px 0;
+}
+
+.constraint-list li {
+  counter-increment: constraint;
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 14px;
+  color: var(--text-secondary);
+  align-items: flex-start;
+}
+
+.constraint-list li:last-child { border-bottom: none; }
+
+.constraint-list li::before {
+  content: counter(constraint);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--pol-purple);
+  filter: brightness(1.4);
+  background: var(--pol-purple-glow);
+  border: 1px solid rgba(103,0,229,0.3);
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+}
+
+/* ── Bottom nav ── */
+.page-nav {
+  display: flex;
+  gap: 16px;
+  margin-top: 64px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+}
+
+.page-nav-card {
+  flex: 1;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  text-decoration: none;
+}
+
+.page-nav-card:hover {
+  border-color: rgba(103,0,229,0.5);
+  background: rgba(103,0,229,0.05);
+}
+
+.page-nav-dir {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+
+.page-nav-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.page-nav-card.right { text-align: right; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
+
+/* ── On-this-page ── */
+.on-this-page {
+  position: fixed;
+  right: 32px;
+  top: 56px;
+  width: 196px;
+  font-size: 12px;
+}
+
+.otp-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-tertiary);
+  margin-bottom: 10px;
+}
+
+.otp-item {
+  display: block;
+  padding: 4px 0;
+  color: var(--text-tertiary);
+  text-decoration: none;
+  transition: color 0.15s;
+  line-height: 1.4;
+}
+
+.otp-item:hover { color: var(--text-secondary); }
+.otp-item.active { color: #C590E5; }
+
+@media (max-width: 1200px) { .on-this-page { display: none; } }
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { padding: 32px 24px 80px; }
+  .compare-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="pol-mark">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L3 7V17L12 22L21 17V7L12 2Z" fill="white" opacity="0.9"/>
+        <path d="M12 2L21 7L12 12L3 7L12 2Z" fill="white" opacity="0.4"/>
+      </svg>
+    </div>
+    <div>
+      <div class="sidebar-brand">Polygon <span>/ Privacy Circuitry</span></div>
+    </div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">OMS Modules</div>
+    <a class="nav-item active" href="#">Private Transactions</a>
+    <a class="nav-item sub" href="#cryptographic-primitives">Cryptographic Primitives</a>
+    <a class="nav-item sub" href="#key-derivation">Key Derivation &amp; Stealth Addresses</a>
+    <a class="nav-item sub" href="#utxos">UTXOs, Commitments &amp; Nullifiers</a>
+    <a class="nav-item sub" href="#merkle-trees">Merkle Trees</a>
+    <a class="nav-item sub" href="#circuits">ZK Circuits</a>
+  </div>
+</nav>
+
+<!-- ── On This Page ── -->
+<aside class="on-this-page">
+  <div class="otp-label">On this page</div>
+  <a class="otp-item" href="#cryptographic-primitives">Cryptographic Primitives</a>
+  <a class="otp-item" href="#key-derivation">Key Derivation</a>
+  <a class="otp-item" href="#stealth-addresses">Stealth Addresses</a>
+  <a class="otp-item" href="#utxos">UTXOs &amp; Commitments</a>
+  <a class="otp-item" href="#merkle-trees">Merkle Trees</a>
+  <a class="otp-item" href="#circuits">ZK Circuits</a>
+  <a class="otp-item" href="#circuit-signals">Circuit Signals</a>
+  <a class="otp-item" href="#circuit-constraints">Enforced Constraints</a>
+</aside>
+
+<!-- ── Main Content ── -->
+<main class="main">
+
+  <div class="breadcrumb">
+    <a href="#">OMS Docs</a>
+    <span>›</span>
+    <a href="#">Modules</a>
+    <span>›</span>
+    <span>Private Transactions</span>
+  </div>
+
+  <div class="page-header" id="overview">
+    <div class="page-eyebrow">OMS Module</div>
+    <h1 class="page-title">Private Transactions</h1>
+    <p class="page-description">
+      Shield balances and transfers from public view using zero-knowledge proofs. Transactions execute on-chain without exposing senders, receivers, or amounts - while preserving full auditability for authorized compliance reviewers.
+    </p>
+    <div class="badge-row">
+      <span class="badge badge-purple">Groth16 / zk-SNARK</span>
+      <span class="badge badge-blue">BabyJubJub ECC</span>
+      <span class="badge badge-purple">Poseidon Hash</span>
+      <span class="badge badge-green">EVM + Solana</span>
+      <span class="badge badge-blue">UTXO Model</span>
+    </div>
+  </div>
+
+  <div class="callout callout-note">
+    <span class="callout-icon">◆</span>
+    <div>
+      Org viewing-key delegation must be configured before private transactions go live in production.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ── Cryptographic Primitives ── -->
+  <section class="section-anchor" id="cryptographic-primitives">
+    <h2>Cryptographic Primitives <a class="anchor-link" href="#cryptographic-primitives">#</a></h2>
+
+    <p>
+      The OMS privacy module is built on three cryptographic components, each chosen for compatibility with on-chain verification at low cost.
+    </p>
+
+    <h3>BabyJubJub Elliptic Curve</h3>
+    <p>
+      A twisted Edwards curve operating over the BN254 prime field. Natively compatible with EVM zk-SNARK circuits, making elliptic-curve operations inside a proof cheap enough for production use.
+    </p>
+
+    <div class="math-block">
+      ax² + y² = 1 + dx²y²<br>
+      <span class="math-comment">// Field prime p = 21888242871839275...617 (BN254 Fr)</span><br>
+      <span class="math-comment">// a = 168700, d = 168696</span>
+    </div>
+
+    <h3>Poseidon Hash Function</h3>
+    <p>
+      A zk-SNARK-native hash function. Unlike SHA-256, Poseidon operates directly over prime fields - no bit operations, dramatically fewer R1CS constraints. Used throughout for commitments, nullifiers, and Merkle tree nodes.
+    </p>
+
+    <div class="arch-diagram">
+      <div style="font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px;">Poseidon Round Function</div>
+      <div class="arch-row">
+        <div class="arch-box arch-box-gray">
+          <div class="ab-label">Step 1</div>
+          <div class="ab-title">AddRoundConstants</div>
+          <div class="ab-sub">state[i] = state[i] + C[i]</div>
+        </div>
+        <div style="display:flex;align-items:center;color:var(--text-tertiary);font-size:18px;padding:0 4px;">→</div>
+        <div class="arch-box arch-box-purple">
+          <div class="ab-label">Step 2</div>
+          <div class="ab-title">SubWords (S-box)</div>
+          <div class="ab-sub">state[i] = state[i]⁵</div>
+        </div>
+        <div style="display:flex;align-items:center;color:var(--text-tertiary);font-size:18px;padding:0 4px;">→</div>
+        <div class="arch-box arch-box-blue">
+          <div class="ab-label">Step 3</div>
+          <div class="ab-title">MixLayer</div>
+          <div class="ab-sub">MDS matrix transform</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Groth16 zk-SNARK</h3>
+    <p>
+      All privacy circuit proofs use Groth16 over BN254. Constant-size proofs, fast on-chain verification. Circuits are compiled to R1CS using Circom 2.x with circomlib primitives.
+    </p>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ</span>
+      <div>
+        <strong>Trusted Setup:</strong> Phase 1 (universal Powers of Tau) reuses Polygon Hermez's ceremony - no re-run required when circuits change. Phase 2 is circuit-specific; any circuit update triggers a new Phase 2 only. The on-chain verifier uses the fixed verifying key.
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ── Key Derivation ── -->
+  <section class="section-anchor" id="key-derivation">
+    <h2>Key Derivation <a class="anchor-link" href="#key-derivation">#</a></h2>
+
+    <p>
+      Each OMS private account derives two independent keys from a single Ethereum wallet signature. The signature acts as deterministic entropy - no new secrets need to be stored.
+    </p>
+
+    <div class="compare-grid">
+      <div class="compare-card">
+        <h4>Spending Key</h4>
+        <ul>
+          <li>Authorizes UTXO spends</li>
+          <li>Derived via ECDSA signature on secp256k1</li>
+          <li>Deterministic - same wallet, same key</li>
+          <li>Never leaves the client</li>
+          <li>Separate from the EOA private key</li>
+        </ul>
+      </div>
+      <div class="compare-card">
+        <h4>Viewing Key</h4>
+        <ul>
+          <li>Decrypts incoming commitments</li>
+          <li>Derived from spending key via libsodium <code>crypto_box_seed_keypair</code></li>
+          <li>Curve25519-based keypair</li>
+          <li>Read-only - cannot authorize spends</li>
+          <li>Delegatable to org accounts</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">Derivation Flow</span>
+      </div>
+      <pre><span class="cm">// 1. User signs a deterministic message with their ETH wallet</span>
+<span class="kw">const</span> <span class="var">sig</span> <span class="op">=</span> <span class="kw">await</span> <span class="fn">wallet.signMessage</span>(<span class="str">"oms_private_account_v1"</span>)
+
+<span class="cm">// 2. sig.r || sig.s used as 32-byte seed → Spending Key</span>
+<span class="kw">const</span> <span class="var">spendingKey</span> <span class="op">=</span> <span class="fn">deriveSpendingKey</span>(<span class="var">sig</span>)   <span class="cm">// BabyJubJub scalar</span>
+
+<span class="cm">// 3. Spending Key seeds Curve25519 keypair → Viewing Key pair</span>
+<span class="kw">const</span> { <span class="var">privateKey</span>: <span class="var">vkPriv</span>, <span class="var">publicKey</span>: <span class="var">vkPub</span> } <span class="op">=</span>
+  <span class="fn">libsodium.crypto_box_seed_keypair</span>(<span class="var">spendingKey</span>)</pre>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ── Stealth Addresses ── -->
+  <section class="section-anchor" id="stealth-addresses">
+    <h2>Stealth Addresses <a class="anchor-link" href="#stealth-addresses">#</a></h2>
+
+    <p>
+      Every transfer generates a fresh one-time address for the recipient. On-chain observers cannot link two transactions to the same user, nor identify the recipient of any transfer.
+    </p>
+
+    <h3>Construction</h3>
+    <p>
+      A user's canonical public key <code>C</code> is a BabyJubJub point derived from their spending key <code>vk</code> and the curve generator <code>G</code>:
+    </p>
+
+    <div class="math-block">
+      C = vk · G<br><br>
+      <span class="cm">// A stealth address is a pair (H0, H1) satisfying:</span><br>
+      vk · H0 = H1<br><br>
+      <span class="cm">// Generated by the sender using random scalar z:</span><br>
+      H0 = z · C,  H1 = z · G<br><br>
+      <span class="cm">// Stealth address commitment (on-chain identifier):</span><br>
+      StealthAddress = Poseidon4(H0x, H0y, H1x, H1y)
+    </div>
+
+    <div class="callout callout-note">
+      <span class="callout-icon">◆</span>
+      <div>
+        Per Fauzi et al., it is computationally infeasible to link two stealth addresses to the same private key, or to extract the private key from a stealth address. Each transfer uses an independently randomized address.
+      </div>
+    </div>
+
+    <h3>User flow</h3>
+    <div class="step-list">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <strong>Connect wallet</strong>
+          <p>Sign once to derive your OMS private account credentials. The signature deterministically recreates spending and viewing keys - nothing new is stored.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <strong>Receive to private balance</strong>
+          <p>Sender computes a stealth address for the recipient and creates a UTXO. Only the commitment hash appears on-chain.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <strong>Spend or transfer privately</strong>
+          <p>Wallet generates a ZK proof attesting ownership and value conservation - without revealing which UTXOs were consumed.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <strong>Public EOA stays unlinked</strong>
+          <p>Only commitments, nullifiers, and Merkle roots are visible on-chain. The EOA address is never associated with private inflows or outflows.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ── UTXOs ── -->
+  <section class="section-anchor" id="utxos">
+    <h2>UTXOs, Commitments &amp; Nullifiers <a class="anchor-link" href="#utxos">#</a></h2>
+
+    <p>
+      Private balances use a UTXO model. Each unit of value is a discrete note; spending it produces a nullifier that permanently prevents reuse.
+    </p>
+
+    <h3>UTXO Structure</h3>
+
+    <table class="prop-table">
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>tokenAddress</td>
+          <td>address</td>
+          <td>ERC-20 contract address. Zero address = native ETH.</td>
+        </tr>
+        <tr>
+          <td>amount</td>
+          <td>uint256</td>
+          <td>Token quantity held by this note.</td>
+        </tr>
+        <tr>
+          <td>stealthAddress</td>
+          <td>field</td>
+          <td>BabyJubJub stealth address owning this UTXO.</td>
+        </tr>
+        <tr>
+          <td>timestamp</td>
+          <td>uint64</td>
+          <td>Creation time, baked into the commitment hash.</td>
+        </tr>
+        <tr>
+          <td>tokenId</td>
+          <td>uint256?</td>
+          <td>Optional NFT identifier.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Commitment</h3>
+
+    <div class="math-block">
+      Commitment = Poseidon4(tokenAddress, amount, stealthAddress, timestamp)<br>
+      <span class="math-comment">// Zero-amount UTXOs produce a zero commitment (padding slots)</span>
+    </div>
+
+    <h3>Nullifier</h3>
+
+    <div class="math-block">
+      Signature = Poseidon2(spendingKey, Commitment)<br>
+      Nullifier  = Poseidon2(Signature, Commitment)<br>
+      <span class="math-comment">// Recorded on-chain after spend - prevents double-spend</span>
+    </div>
+
+    <h3>On-chain vs. off-chain UTXO creation</h3>
+
+    <div class="compare-grid">
+      <div class="compare-card">
+        <h4>Off-chain (default)</h4>
+        <ul>
+          <li>Full UTXO computed client-side</li>
+          <li>Only commitment hash stored on-chain</li>
+          <li>Encrypted output lets recipient reconstruct</li>
+          <li>Best for transfers with known amounts</li>
+          <li>Maximum privacy</li>
+        </ul>
+      </div>
+      <div class="compare-card">
+        <h4>On-chain</h4>
+        <ul>
+          <li>Smart contract constructs UTXO during execution</li>
+          <li>Required when final amounts are unknown pre-execution</li>
+          <li>DEX swaps, yield accrual, liquidity positions</li>
+          <li>Ownership verified via ECC operations on BabyJubJub</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Approved UTXOs</h3>
+    <p>
+      A specialized UTXO type that acts as an on-chain allowance for external protocol interactions (e.g., Uniswap). The <code>inHinkalAddress</code> is contract-specific, preventing cross-protocol linking while enabling proper spend authorization.
+    </p>
+
+    <div class="math-block">
+      inHinkalAddress = Poseidon2(spendingKey, interactionAddress)<br>
+      <span class="math-comment">// Same user → different inHinkalAddress per contract</span>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ── Merkle Trees ── -->
+  <section class="section-anchor" id="merkle-trees">
+    <h2>Merkle Trees <a class="anchor-link" href="#merkle-trees">#</a></h2>
+
+    <p>
+      All commitments are stored in an on-chain Merkle tree. Spenders prove inclusion of their note against the current tree root - without revealing which leaf they're proving.
+    </p>
+
+    <h3>Append-only insertions</h3>
+    <p>
+      New leaves are always appended left-to-right. This deterministic ordering prevents ambiguity when multiple parties interact with the tree in parallel, and ensures each leaf index maps unambiguously to insertion order. Only the nodes on the insertion path are recomputed - O(log n) per insert.
+    </p>
+
+    <h3>Root history window</h3>
+    <p>
+      Because the root changes on every insertion, the contract retains a sliding window of recent roots (e.g., last 100). Proofs generated against slightly older states remain valid within this window. This prevents a denial-of-service vector where a flood of insertions would invalidate honest provers' pending proofs.
+    </p>
+
+    <h3>Two tree variants</h3>
+
+    <div class="compare-grid">
+      <div class="compare-card">
+        <h4>Write-optimized (frontier)</h4>
+        <ul>
+          <li>Tracks only the right frontier</li>
+          <li>Minimal storage - O(depth) nodes</li>
+          <li>Insertions only - no deletions</li>
+          <li>Default for deposit/transfer flows</li>
+        </ul>
+      </div>
+      <div class="compare-card">
+        <h4>Fully mapped</h4>
+        <ul>
+          <li>Binary-heap indexing - full tree in memory</li>
+          <li>Supports leaf deletion and replacement</li>
+          <li>Higher storage cost</li>
+          <li>Used where commitments can be revoked</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ</span>
+      <div>
+        Hashing rule: <code>Hash(left, right)</code> when both children exist; <code>Hash(left, 0)</code> when only the left child exists. Zero is the placeholder for absent right children - incomplete subtrees still produce deterministic roots.
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ── Circuits ── -->
+  <section class="section-anchor" id="circuits">
+    <h2>ZK Circuits <a class="anchor-link" href="#circuits">#</a></h2>
+
+    <p>
+      The core EVM circuit (<code>MainEVMCircuit</code>) is a generalized, multi-token transaction circuit. A single proof covers up to <code>inputCount</code> input UTXOs and <code>outputCount</code> output UTXOs across <code>tokenCount</code> distinct tokens.
+    </p>
+
+    <h3>Template parameters</h3>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Circom</span></div>
+      <pre><span class="fn">MainEVMCircuit</span>(<span class="var">tokenCount</span>, <span class="var">inputCount</span>, <span class="var">outputCount</span>, <span class="var">treeDepth</span>)
+
+<span class="cm">// Instantiated at fixed sizes for concrete proving artifacts:</span>
+<span class="cm">// 1×2×1  - single token, 2 inputs, 1 output</span>
+<span class="cm">// 2×2×2  - dual token, 2 inputs, 2 outputs</span>
+<span class="cm">// 3×2×1  - triple token, 2 inputs, 1 output</span>
+<span class="cm">// Min0   - minimum-size (padding-only proof)</span></pre>
+    </div>
+
+    <h3>Circuit gadgets</h3>
+
+    <table class="gadget-table">
+      <thead>
+        <tr>
+          <th>Gadget</th>
+          <th>Role</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>StealthAddressCalculator</td>
+          <td>Derives sender stealth address and H1 from H0, spending key, nullifying key</td>
+        </tr>
+        <tr>
+          <td>StealthAddressCalculatorExtended</td>
+          <td>Derives per-input note public key - supports legacy and new derivation schemes in one proof</td>
+        </tr>
+        <tr>
+          <td>CommitmentCalculator</td>
+          <td>Poseidon-4 commitment from UTXO fields; zeroed for zero-amount inputs</td>
+        </tr>
+        <tr>
+          <td>Signature</td>
+          <td>Poseidon-2 signature of a commitment under the nullifying key</td>
+        </tr>
+        <tr>
+          <td>NullifierCalculator</td>
+          <td>Poseidon-2 nullifier from commitment + signature; zeroed for zero commitments</td>
+        </tr>
+        <tr>
+          <td>SignatureVerifier</td>
+          <td>EdDSA-Poseidon verification of the spending key signature</td>
+        </tr>
+        <tr>
+          <td>MerkleRootCalculator</td>
+          <td>Recomputes Merkle root from leaf + sibling path</td>
+        </tr>
+        <tr>
+          <td>OverflowPreventer</td>
+          <td>Range-checks all amounts to prevent field wrap-around</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ── Circuit Signals ── -->
+  <section class="section-anchor" id="circuit-signals">
+    <h2>Circuit Signals <a class="anchor-link" href="#circuit-signals">#</a></h2>
+
+    <div class="signal-section">
+      <div class="signal-group">
+        <div class="signal-group-label">Public Inputs</div>
+        <div class="signal-items">
+          <div class="signal-row">
+            <span class="signal-name">rootHashHinkal</span>
+            <span class="signal-desc">Merkle root of the on-chain commitment tree. Every non-empty input proves membership against this root.<br><span style="font-size:12px;color:var(--text-tertiary);margin-top:3px;display:block;">Variable named per the underlying circuit implementation; semantically equivalent to the on-chain commitment tree root.</span></span>
+          </div>
+          <div class="signal-row">
+            <span class="signal-name">signedMessageHash</span>
+            <span class="signal-desc">Message that the EdDSA signature must verify under the spending public key.</span>
+          </div>
+          <div class="signal-row">
+            <span class="signal-name">erc20TokenAddresses[T]</span>
+            <span class="signal-desc">Token address per token type. Zero address = ETH. All entries must be distinct.</span>
+          </div>
+          <div class="signal-row">
+            <span class="signal-name">amountChanges[T]</span>
+            <span class="signal-desc">Net change per token type. Positive = deposit/refund, negative = withdrawal/spend.</span>
+          </div>
+          <div class="signal-row">
+            <span class="signal-name">outTimeStamp</span>
+            <span class="signal-desc">Single timestamp applied to all output commitments.</span>
+          </div>
+          <div class="signal-row">
+            <span class="signal-name">inNullifiers[T][I]</span>
+            <span class="signal-desc">Declared nullifiers - each must equal the circuit-recomputed value.</span>
+          </div>
+          <div class="signal-row">
+            <span class="signal-name">outCommitments[T][O]</span>
+            <span class="signal-desc">Claimed output commitments.</span>
+          </div>
+          <div class="signal-row">
+            <span class="signal-name">calldataHash</span>
+            <span class="signal-desc">Calldata digest exposed for binding by the contract.</span>
+          </div>
+          <div class="signal-row">
+            <span class="signal-name">H0Ax, H0Ay</span>
+            <span class="signal-desc">BabyJubJub point for deriving the sender's stealth address.</span>
+          </div>
+        </div>
+      </div>
+      <div class="signal-group">
+        <div class="signal-group-label">Public Outputs</div>
+        <div class="signal-items">
+          <div class="signal-row">
+            <span class="signal-name">outStealthAddress</span>
+            <span class="signal-desc">Sender stealth address - Poseidon6 of signs, H0Ay, H1Ay, spending key, nullifying key.</span>
+          </div>
+          <div class="signal-row">
+            <span class="signal-name">outH1Ay</span>
+            <span class="signal-desc">Y-coordinate of H1 = nullifyingKey · H0. Allows the contract to reconstruct commitments cheaply, avoiding on-chain ECC scalar multiplication.</span>
+          </div>
+          <div class="signal-row">
+            <span class="signal-name">message</span>
+            <span class="signal-desc">Poseidon1(messageSeed) - binds the public message to a private seed.</span>
+          </div>
+        </div>
+      </div>
+      <div class="signal-group">
+        <div class="signal-group-label">Private Witness (not revealed)</div>
+        <div class="signal-items">
+          <div class="signal-row">
+            <span class="signal-name">nullifyingPrivateKey</span>
+            <span class="signal-desc">Spender's secret nullifying key.</span>
+          </div>
+          <div class="signal-row">
+            <span class="signal-name">spendingPublicKey[2]</span>
+            <span class="signal-desc">Spending public key on BabyJubJub.</span>
+          </div>
+          <div class="signal-row">
+            <span class="signal-name">eddsaSignature[3]</span>
+            <span class="signal-desc">EdDSA signature (R8x, R8y, S) over signedMessageHash.</span>
+          </div>
+          <div class="signal-row">
+            <span class="signal-name">inAmounts[T][I]</span>
+            <span class="signal-desc">Amount per input UTXO.</span>
+          </div>
+          <div class="signal-row">
+            <span class="signal-name">inCommitmentSiblings[T][I][D]</span>
+            <span class="signal-desc">Merkle authentication path for each input.</span>
+          </div>
+          <div class="signal-row">
+            <span class="signal-name">outAmounts[T][O], outPublicKeys[T][O]</span>
+            <span class="signal-desc">Output amounts and recipient stealth public keys.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ── Circuit Constraints ── -->
+  <section class="section-anchor" id="circuit-constraints">
+    <h2>Enforced Constraints <a class="anchor-link" href="#circuit-constraints">#</a></h2>
+
+    <p>
+      The circuit enforces nine conditions. Every proof that passes on-chain verification satisfies all of them simultaneously.
+    </p>
+
+    <ol class="constraint-list">
+      <li>
+        <strong>Valid spending signature</strong> - EdDSA-Poseidon verifies that <code>eddsaSignature</code> is a valid signature on <code>signedMessageHash</code> under <code>spendingPublicKey</code>. Proves the prover controls the spending key without revealing it.
+      </li>
+      <li>
+        <strong>Message pinning</strong> - <code>message = Poseidon1(messageSeed)</code>. The public message is forced to be the Poseidon hash of a private seed known only to the prover.
+      </li>
+      <li>
+        <strong>Correct nullifiers</strong> - For each input, the circuit reconstructs the note's public key, recomputes the commitment and nullifier, and asserts equality with the publicly declared nullifier. Prevents double-spending.
+      </li>
+      <li>
+        <strong>Valid Merkle membership</strong> - <code>MerkleRootCalculator</code> folds each input commitment up through its sibling path and asserts the resulting root equals <code>rootHashHinkal</code>. Skipped for zero-amount padding inputs.
+      </li>
+      <li>
+        <strong>Correct output commitments</strong> - <code>CommitmentCalculator</code> recomputes each output commitment and asserts equality with the declared <code>outCommitments</code>.
+      </li>
+      <li>
+        <strong>Balanced amounts</strong> - Per token type: <code>inTotal + amountChanges = outTotal</code>. No value is created or destroyed inside the proof.
+      </li>
+      <li>
+        <strong>Distinct token addresses</strong> - All entries in <code>erc20TokenAddresses</code> must be unique. Enforced via O(T²/2) comparators.
+      </li>
+      <li>
+        <strong>Sender stealth address derivation</strong> - <code>StealthAddressCalculator</code> derives the sender's stealth address and exposes <code>outStealthAddress</code> and <code>outH1Ay</code> for cheap on-chain commitment reconstruction.
+      </li>
+      <li>
+        <strong>Overflow prevention</strong> - All input and output amounts are range-checked via <code>OverflowPreventer</code> to prevent field wrap-around.
+      </li>
+    </ol>
+  </section>
+
+
+
+
+      <div class="page-nav-title">Money Movement</div>
+    </a>
+    <a class="page-nav-card right" href="#">
+      <div class="page-nav-dir">Next →</div>
+      <div class="page-nav-title">Compliance &amp; Audit Trails</div>
+    </a>
+  </div>
+
+</main>
+
+<script>
+const navItems = document.querySelectorAll('.nav-item.sub, .otp-item');
+const sections = document.querySelectorAll('.section-anchor');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      navItems.forEach(item => {
+        const href = item.getAttribute('href');
+        if (href === '#' + id) {
+          item.classList.add('active');
+        } else if (item.classList.contains('nav-item')) {
+          item.classList.remove('active');
+        } else {
+          item.classList.remove('active');
+        }
+      });
+    }
+  });
+}, { threshold: 0.2, rootMargin: '-80px 0px -60% 0px' });
+
+sections.forEach(s => observer.observe(s));
+
+document.querySelectorAll('.code-copy').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const pre = this.closest('.code-block').querySelector('pre');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      this.textContent = 'Copied';
+      setTimeout(() => this.textContent = 'Copy', 1500);
+    });
+  });
+});
+</script>
+
+</body>
+</html>
